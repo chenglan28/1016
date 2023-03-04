@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>1016-Control-Center</title>
+        <style>
+            * {
+                padding: 0;
+                margin: 0;
+            }
+            *::-webkit-scrollbar {
+                width: 0;
+                height: 0;
+            }
+            body,html {
+                width: 100%;
+                height: 100%;
+            }
+            body {
+                background: #2193b0;  /* fallback for old browsers */      
+                background: -webkit-linear-gradient(to right, rgb(33, 147, 176), rgb(109, 213, 237));  /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, rgb(33, 147, 176), rgb(109, 213, 237)); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */      
+                background-size: 100%;
+                background-repeat: no-repeat;
+            }
+            #LoginUI {
+                position: fixed;
+                top: 25%;
+                left: 25%;
+                background-color: white;
+                width: 45%;
+                height: 45%;
+                padding: 2.5%;
+                text-align: center;
+            }
+            #username,#password {
+                width: 90%;
+                background: none;
+                border: none;
+                position: absolute;
+                left: 5%;
+                height: 10%;
+                border-bottom: 1px #08C solid;
+            }
+            #username {
+                top: 20%;
+            }
+            #password {
+                top: 40%;
+            }
+            #login {
+                border: none;
+                background: #08C;
+                position: absolute;
+                left: 5%;
+                top: 60%;
+                width: 90%;
+                height: 10%;
+                color: white;
+            }
+            #desktop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: none;
+            }
+            #side {
+                position: fixed;
+                width: 68%;
+                height: 8%;
+                bottom: 1%;
+                left: 15%;
+                background: white;
+                opacity: 0.5;
+                padding: 1%;
+                overflow-x: auto;
+                overflow-y: hidden;
+                white-space: nowrap;
+            }
+            #side svg {
+                height: 100%;
+                border-bottom: 2px white solid;
+            }
+            #side svg:hover {
+                border-bottom: 2px #08C solid;
+            }
+            #top {
+                width: 100%;
+                height: 1.5%;
+                padding: 0.5%;
+                background: white;
+                position: fixed;
+                text-align: center;
+                color: black;
+                opacity: 0.5;
+                display: none;
+                user-select: none;
+            }
+            #app {
+                width: 100%;
+                position: fixed;
+                left: 0;
+                background: white;
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="desktop">
+            <div id="side">
+                <svg viewBox="0 0 1024 1024" onclick="openApp(app.control)"><path d="M853.333333 810.666667V298.666667H170.666667v512h682.666666m0-682.666667a85.333333 85.333333 0 0 1 85.333334 85.333333v597.333334a85.333333 85.333333 0 0 1-85.333334 85.333333H170.666667a85.333333 85.333333 0 0 1-85.333334-85.333333V213.333333a85.333333 85.333333 0 0 1 85.333334-85.333333h682.666666m-298.666666 597.333333v-85.333333h213.333333v85.333333h-213.333333m-145.92-170.666666L237.653333 384H358.4l140.8 140.8c16.64 16.64 16.64 43.946667 0 60.586667L359.253333 725.333333H238.506667l170.24-170.666666z" fill="#000000"></path></svg>
+            </div>
+        </div>
+        <div id="top"></div>
+        <div id="app"></div>
+        <div id="LoginUI">
+            1016-Control-Center
+            <input type="text" placeholder="Username" id="username" onkeydown="key.username(event)" />
+            <input type="password" placeholder="Password" id="password" onkeydown="key.password(event)" />
+            <button type="button" id="login" onclick="login($('#username').val(),$('#password').val())">Login</button>
+        </div>
+        <script src="$.js"></script>
+        <script>
+            saveData = () => {
+                return localStorage.info = JSON.stringify(info)
+            }//缓存
+            if(localStorage.info){
+                info = JSON.parse(localStorage.info);
+            }
+            else {
+                info = {
+                    "username":"",
+                    "password":""
+                }
+            }//载入缓存
+            $("#username").val(info.username);
+            $("#password").val(info.password);
+            inBox = "";
+            key = {
+                "username":(e)=>{
+                    if(e.key == "Enter")$("#password").focus();
+                },
+                "password":(e)=>{
+                    if(e.key == "Backspace" && $("#password").val() == "")$("#username").focus();
+                    else if(e.key == "Enter")login($("#username").val(),$("#password").val());
+                }
+            }//键盘事件
+            window.onresize = () => {
+                w = window.innerWidth;
+                h = window.innerHeight;
+                $("#LoginUI").style.borderRadius = w / 40 + "px";
+                $("#LoginUI").style.fontSize = w / 40 + "px";
+                $("#username").style.fontSize = w / 80 + "px";
+                $("#password").style.fontSize = w / 80 + "px";
+                $("#login").style.fontSize = w / 80 + "px";
+                $("#side").style.borderRadius = h / 100 + "px";
+                $("#top").style.fontSize = h / 200 * 3 + "px";
+                $("#app").style.height = h / 40 * 39 - 2.5 + "px";
+                $("#app").style.top = h / 40 + 2.5 + "px";
+            }
+            window.onresize();//调整尺寸
+            login = (username,password) => {
+                if(username == "")alert("Please Enter Username");
+                else if(password == "")alert("Please Enter Password");
+                else {
+                    fetch(location.href + "login",{
+                        "method":"POST",
+                        "headers":{
+                            "Content-Type":"application/json"
+                        },
+                        "body":JSON.stringify({
+                            "username":username,
+                            "password":hex_md5(password)
+                        })
+                    }).then(data=>data.json()).then(data=>{
+                        if(data.err)alert(data.err);
+                        else {
+                            info.username = username;
+                            info.password = password;
+                            saveData();
+                            $("#LoginUI").hide();
+                            $("#desktop").show();
+                        }
+                    })
+                }
+            }//登录
+            var topTick = 0,topTickBox;
+            $("#top").onclick = () => {
+                topTick++;
+                $("#top").style.color = "white";
+                $("#top").style.background = "red";
+                if(!topTickBox)topTickBox = setTimeout(() => {
+                    topTick = 0;
+                    clearTimeout(topTickBox);
+                    topTickBox = undefined;
+                    $("#top").style.color = "gray";
+                    $("#top").style.background = "white";
+                },500);
+                if(topTick > 1){
+                    $("#app").hide();
+                    $("#top").hide();
+                    $("#app").html("");
+                    $("#app").style.background = "white";
+                    $("#top").html("");
+                    $("#top").style.color = "gray";
+                    $("#top").style.background = "white";
+                    inBox = "";
+                    topTick = 0;
+                    clearTimeout(topTickBox);
+                    topTickBox = undefined;
+                }
+            }
+            $("#username").focus();//获取焦点
+            app = {
+                "control":{
+                    "title":"control",
+                    "background":"black",
+                    "UI":`<pre style="width: 98%;height: 93%;overflow: auto;color: white;padding: 1%" id="control-log"></pre>
+                    <input type="text" id="control-cmd" placeholder=">>" style= "padding: 1%;width: 98%;height: 3%;background: none;border: none;color: white;" />`,
+                    "script":()=>{
+                        $("#control-log").style.fontSize = h / 75 + "px";
+                        $("#control-cmd").style.fontSize = h / 75 + "px";
+                        $("#control-cmd").placeholder = info.username + "@";
+                        fetch(location.href + "log",{
+                            "method":"POST",
+                            "headers":{
+                                "Content-Type":"application/json"
+                            },
+                            "body":JSON.stringify({
+                                "username":info.username,
+                                "password":hex_md5(info.password)
+                            })
+                        }).then(data=>data.json()).then(data=>{
+                            if(data.err)alert(data.err);
+                            else {
+                                $("#control-log").html(data.msg);
+                            }
+                        })
+                    }
+                }
+            }
+            openApp = (item) => {
+                inBox = item.title;
+                $("#top").html(item.title);
+                $("#app").style.background = item.background;
+                $("#app").html(item.UI);
+                item.script();
+                $("#top").show();
+                $("#app").show();
+            }
+        </script>
+    </body>
+</html>
